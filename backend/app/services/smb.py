@@ -511,11 +511,17 @@ def read_file(server_id: str, path: str, chunk_size: int = 512 * 1024
 
 
 def write_file(server_id: str, parent: str, filename: str, stream,
-               on_progress=None) -> dict[str, Any]:
+               on_progress=None, max_bytes: Optional[int] = None
+               ) -> dict[str, Any]:
     """Stream an upload straight through to the server.
 
     Written to a temporary name and renamed into place, so an interrupted
     upload never leaves a half-file that looks complete.
+
+    `max_bytes` is enforced HERE, while streaming, because that is the only
+    place it can be trusted: a Content-Length header is client-supplied and a
+    chunked upload has none at all. Exceeding it aborts mid-stream and deletes
+    the partial file, so a phone cannot fill the share by lying about a size.
     """
     _reject_bad_name(filename)
     session = require(server_id)
@@ -532,8 +538,13 @@ def write_file(server_id: str, parent: str, filename: str, stream,
                 chunk = stream.read(1024 * 1024)
                 if not chunk:
                     break
-                handle.write(chunk)
                 written += len(chunk)
+                if max_bytes is not None and written > max_bytes:
+                    raise Failure(
+                        "too_large", _target(session),
+                        underlying=f"upload exceeded MAX_UPLOAD_BYTES "
+                                   f"({max_bytes} bytes)")
+                handle.write(chunk)
                 if on_progress:
                     on_progress(written)
         smbclient.rename(_unc(session, temp_path), _unc(session, final_path))
@@ -542,6 +553,10 @@ def write_file(server_id: str, parent: str, filename: str, stream,
             smbclient.remove(_unc(session, temp_path))
         except Exception:  # noqa: BLE001 - cleanup is best effort
             pass
+        # Failure is already translated; re-raising it through from_exception
+        # would relabel a size rejection as a generic connection problem.
+        if isinstance(exc, Failure):
+            raise
         raise from_exception(exc, _target(session))
 
     return {"path": final_path, "name": final_name, "size": written}

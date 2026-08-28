@@ -135,3 +135,15 @@ def test_every_kind_has_a_title_and_message():
         assert failure.title
         assert failure.message
         assert "None" not in failure.message
+
+
+# --------------------------------------------------- upload size limit
+
+def test_too_large_is_its_own_kind_not_out_of_space():
+    """413 is "your file is too big for this server", not "the disk is full".
+    Conflating them would send someone to free up space that is not the issue."""
+    failure = Failure("too_large", "nas")
+    assert failure.http_status == 413
+    assert failure.title == "File Too Large"
+    assert "MAX_UPLOAD_BYTES" in failure.message
+    assert Failure("out_of_space", "nas").http_status == 507

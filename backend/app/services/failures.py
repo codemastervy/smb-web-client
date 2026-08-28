@@ -28,7 +28,7 @@ KINDS = (
     "timed_out", "host_unreachable", "connection_refused",
     "authentication_failed", "share_not_found", "permission_denied",
     "not_found", "already_exists", "directory_not_empty", "out_of_space",
-    "invalid_configuration", "cancelled", "other",
+    "invalid_configuration", "cancelled", "too_large", "other",
 )
 
 _TITLES = {
@@ -43,6 +43,7 @@ _TITLES = {
     "directory_not_empty": "Folder Not Empty",
     "out_of_space": "Out of Space",
     "invalid_configuration": "Invalid Connection Details",
+    "too_large": "File Too Large",
     "cancelled": "Cancelled",
     "other": "Couldn't Connect",
 }
@@ -187,6 +188,9 @@ class Failure(Exception):
                 f"The connection details for {label} aren't valid. Check the "
                 f"host, port, and share name.",
             "cancelled": "The operation was cancelled.",
+            "too_large":
+                f"That file is larger than this server allows in a single "
+                f"upload. Raise MAX_UPLOAD_BYTES if you need bigger uploads.",
         }.get(self.kind,
               f"Couldn't connect to {label}. {self.underlying}"
               if self.underlying else f"Couldn't connect to {label}.")
@@ -211,6 +215,7 @@ class Failure(Exception):
             "out_of_space": 507,
             "invalid_configuration": 400,
             "timed_out": 504,
+            "too_large": 413,
             "host_unreachable": 502,
             "connection_refused": 502,
         }.get(self.kind, 502)

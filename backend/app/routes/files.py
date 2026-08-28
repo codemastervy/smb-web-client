@@ -6,10 +6,11 @@ import mimetypes
 import urllib.parse
 
 from fastapi import (APIRouter, Depends, File, Form, HTTPException, Query,
-                     UploadFile)
+                     Request, UploadFile)
 from fastapi.responses import StreamingResponse
 
 from ..auth import require_auth
+from ..config import MAX_UPLOAD_BYTES
 from ..models import DeleteRequest, MkdirRequest, RenameRequest, TransferRequest
 from ..services import servers, smb, transfers
 from ..services.failures import Failure
@@ -104,9 +105,19 @@ async def delete(req: DeleteRequest) -> dict:
 
 
 @router.post("/upload")
-async def upload(serverId: str = Form(...), path: str = Form("/"),
+async def upload(request: Request, serverId: str = Form(...),
+                 path: str = Form("/"),
                  file: UploadFile = File(...)) -> dict:
     filename = (file.filename or "upload").rsplit("/", 1)[-1]
+
+    # Cheap early reject on the declared size, so an obviously-too-big upload
+    # is refused before a byte reaches the share. Advisory only -- the header
+    # is client-supplied, so write_file enforces the real limit while
+    # streaming.
+    declared = request.headers.get("content-length")
+    if declared and declared.isdigit() and int(declared) > MAX_UPLOAD_BYTES:
+        raise _fail(Failure("too_large", _label(serverId)))
+
     transfer_id = transfers.start(filename, "upload", _label(serverId))
 
     def progress(written: int) -> None:
@@ -114,7 +125,8 @@ async def upload(serverId: str = Form(...), path: str = Form("/"),
 
     try:
         result = await asyncio.to_thread(smb.write_file, serverId, path,
-                                         filename, file.file, progress)
+                                         filename, file.file, progress,
+                                         MAX_UPLOAD_BYTES)
     except Failure as failure:
         transfers.finish(transfer_id, "failed", failure.message)
         raise _fail(failure)
