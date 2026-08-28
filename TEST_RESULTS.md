@@ -50,7 +50,8 @@ two accounts:
 | `ADMIN_PASSWORD` rotation handled honestly | **Pass** |
 | Failure modal button prioritisation | **Pass** |
 | Path traversal / cross-share escape | **Pass** — all refused |
-| Automated test suite | **Pass** — 49 tests |
+| Automated test suite | **Pass** — 55 tests |
+| Upload size limit enforced | **Pass** — including a falsified `Content-Length` |
 | Physical phone browser | **Not verified** — see below |
 
 ---
@@ -167,7 +168,27 @@ rejected the username or password. Check your credentials"* — which would send
 someone to check a password that was never sent. **Fixed** with an explicit
 message override for that case (see below).
 
-### 8. Sidebar layout ran the server name into its address
+### 8. `MAX_UPLOAD_BYTES` was declared but never enforced
+
+Found by auditing the shipped code, not by a test — the config knob existed and
+was documented, but nothing read it. Worse than having no limit at all, because
+it reads as a protection that is there. An upload was bounded only by free disk
+on the target share.
+
+**Fixed:** the cap is enforced **while streaming**, in `write_file`, which is
+the only place it can be trusted — a `Content-Length` is client-supplied and a
+chunked upload has none. Exceeding it aborts mid-stream and deletes the partial
+file. A cheap early reject on a declared oversize runs first so an obviously
+too-big upload never starts. Rejections are their own `too_large` kind (HTTP
+413, "File Too Large") rather than being mislabelled `out_of_space`, which
+would send someone to free up disk that was never the problem.
+
+Covered by six new tests, including the boundary (exactly at the limit is
+allowed, one byte over is not), that the offending chunk is never written, and
+that a deliberately under-declared `Content-Length` does not get past the
+streaming guard.
+
+### 9. Sidebar layout ran the server name into its address
 
 `NAS Documents172.18.0.1/Documents` — the label and sublabel were inline spans.
 **Fixed** by making the row's meta a flex column.

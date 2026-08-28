@@ -49,6 +49,7 @@ The full-screen failure modal, with the most useful action promoted — see
 - [Failure handling](#failure-handling)
 - [Differences from the native app](#differences-from-the-native-app)
 - [Configuration](#configuration)
+- [Backing up](#backing-up)
 - [How it works](#how-it-works)
 - [Development](#development)
 - [Troubleshooting](#troubleshooting)
@@ -252,6 +253,7 @@ page all behave as the native app does.
 | `SMB_TIMEOUT` | `20` | Connection timeout, seconds |
 | `SMB_ENCRYPT` | `false` | Require SMB3 encryption. Off by default because forcing it breaks some older servers |
 | `SMB_IDLE_SECONDS` | `300` | Close a session after this long unused, so a NAS can spin its disks down |
+| `MAX_UPLOAD_BYTES` | `21474836480` | Largest single upload (20 GB). Enforced **while streaming**, so a client cannot bypass it with a false `Content-Length` |
 | `DATA_DIR` | `/data` | Persistent state |
 | `LOG_LEVEL` | `INFO` | Python log level |
 
@@ -267,6 +269,31 @@ startup. If you want the data somewhere visible, fix the ownership first:
 ```bash
 mkdir -p ./data && sudo chown -R 10001:10001 ./data
 # then swap the volume line for:  - ./data:/data
+```
+
+---
+
+## Backing up
+
+The named volume holds your saved servers and their **encrypted** SMB
+passwords. Losing it costs you the connection list, not access to any data.
+
+```bash
+docker run --rm -v smb-web-client_smb-web-client-data:/data \
+  -v "$PWD:/backup" alpine \
+  tar czf /backup/smb-web-client-data-$(date +%F).tar.gz -C /data .
+```
+
+The passwords inside are encrypted, but only as strongly as your
+`ADMIN_PASSWORD` — and the archive is useless without it, so back that up
+separately (in a password manager, not next to the archive).
+
+Restore into a fresh volume:
+
+```bash
+docker run --rm -v smb-web-client_smb-web-client-data:/data \
+  -v "$PWD:/backup" alpine \
+  tar xzf /backup/smb-web-client-data-YYYY-MM-DD.tar.gz -C /data
 ```
 
 ---
