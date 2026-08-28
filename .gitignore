@@ -1,0 +1,13 @@
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+node_modules/
+frontend/dist/
+
+# Saved server profiles and encrypted credentials. Never commit.
+/data/
+.env
+docker-compose.override.yml
+
+.DS_Store

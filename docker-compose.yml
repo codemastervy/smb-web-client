@@ -1,0 +1,77 @@
+# ---------------------------------------------------------------------------
+# smb-web-client
+#
+# An SMB *client* with a web UI. It connects out to file servers. It does not
+# host shares, does not manage local disks, and needs no special privileges.
+#
+# Note what is NOT here compared with a file server: no host networking, no
+# added capabilities, no device passthrough, no bind mounts of your disks.
+# The container runs as a non-root user and needs only outbound TCP/445.
+# ---------------------------------------------------------------------------
+
+services:
+  smb-web-client:
+    build: .
+    image: smb-web-client:latest
+    container_name: smb-web-client
+    restart: unless-stopped
+
+    ports:
+      # Host:container. Change the host side if 8081 is taken.
+      - "8081:8080"
+
+    environment:
+      # REQUIRED. Gates the web UI, and is the key material from which saved
+      # SMB passwords are encrypted.
+      #
+      # NOTE: changing this makes saved SMB passwords undecryptable -- they
+      # are dropped and must be re-entered. See README > Security model.
+      ADMIN_PASSWORD: "${ADMIN_PASSWORD:?set ADMIN_PASSWORD in .env}"
+
+      # Set false ONLY on a network you fully trust. This app holds credentials
+      # to your file server.
+      AUTH_ENABLED: "true"
+
+      # Seconds before an unused SMB session is closed, so a NAS that spins
+      # its disks down is not held awake by an idle browser tab.
+      SMB_IDLE_SECONDS: "300"
+
+      # Connection timeout, seconds.
+      SMB_TIMEOUT: "20"
+
+      # Require SMB3 encryption on the wire. Off by default because forcing it
+      # breaks some older servers; turn it on if every server supports it.
+      SMB_ENCRYPT: "false"
+
+      TZ: "${TZ:-UTC}"
+
+    volumes:
+      # Saved server profiles (with encrypted passwords), preferences, and the
+      # session secret. This is the only persistent state.
+      #
+      # A NAMED VOLUME, not a bind mount, and deliberately so: this container
+      # runs as a non-root user (uid 10001), and a bind-mounted host directory
+      # arrives owned by the host user, so the app cannot write to it and dies
+      # at startup with EACCES. Docker seeds a fresh named volume with the
+      # image's ownership, so this works with no chown and no root.
+      #
+      # If you would rather keep the data somewhere you can see it, use a bind
+      # mount AND fix the ownership first:
+      #     mkdir -p ./data && sudo chown -R 10001:10001 ./data
+      # then replace the line below with:
+      #     - ./data:/data
+      - smb-web-client-data:/data
+
+    # Everything this app needs is outbound. It never accepts an SMB
+    # connection, so no inbound port beyond the web UI is required.
+    security_opt:
+      - no-new-privileges:true
+
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+volumes:
+  smb-web-client-data:
