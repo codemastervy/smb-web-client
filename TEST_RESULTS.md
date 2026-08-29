@@ -475,3 +475,55 @@ docker run --rm -u 0 \
 ```
 
 Then add a real server and browse it — the only test that counts.
+
+---
+
+## Re-verification: fresh clone, clean build, three-way chain
+
+A second test pass against a fresh `git clone` of this repo's `main` branch,
+run alongside a fresh clone of
+[nas-dashboard](https://github.com/codemastervy/nas-dashboard) on a newly
+created VM, specifically to prove the full pipeline end-to-end rather than
+re-test either app in isolation.
+
+**Result: pass.**
+
+**The chain proven:** nas-dashboard created a share → macOS's own SMB client
+(`mount_smbfs`, a genuinely separate device) mounted it and wrote a file →
+this app connected to that same share from a different container and listed
+the exact file macOS had written. Three independent SMB implementations
+(Samba, Apple's SMB stack, and this app's `smbprotocol` client) interoperating
+correctly against the same share.
+
+```
+list (should see the Mac's file from earlier)
+   sample.bin 3145728
+   from-macos-prodtest.txt 51
+```
+
+**The two fixes from the prior session, re-tested under load rather than only
+by unit test:**
+
+- **Upload limit.** Started a second instance with `MAX_UPLOAD_BYTES=1000000`
+  and pushed a 2 MB file at it two ways: once with a normal request (caught by
+  the early `Content-Length` check) and once forced as `Transfer-Encoding:
+  chunked` with **no length header at all** — the shape of request that would
+  defeat a check relying on the client-declared size. Both were rejected with
+  a real `HTTP 413` and the `too_large` failure kind:
+
+  ```json
+  {"detail": {"kind": "too_large", "title": "File Too Large",
+              "underlying": "upload exceeded MAX_UPLOAD_BYTES (1000000 bytes)"}}
+  ```
+
+  Confirms the streaming guard — not just the header check — is what holds.
+
+- **Hostname.** Not directly applicable to this app, but the shared
+  `nas-dashboard` instance in the same test run reported the VM's real
+  hostname rather than a container id (see that repo's `TEST_RESULTS.md`).
+
+**Automated suite:** 56/56 passed, from a fresh install of the tests into the
+freshly built image.
+
+Same caveat as the rest of this document: this VM is aarch64, and the physical
+target hardware was not available.
