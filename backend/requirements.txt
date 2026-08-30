@@ -4,4 +4,4 @@ smbprotocol==1.15.0
 python-multipart==0.0.32
 pydantic==2.10.5
 itsdangerous==2.2.0
-cryptography==50.0.1
+cryptography==44.0.0
