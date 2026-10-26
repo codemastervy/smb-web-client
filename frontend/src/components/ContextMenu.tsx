@@ -68,7 +68,7 @@ export function ContextMenu({ x, y, items, onClose }: {
 
 /** Right-click on a pointer device, long-press on a touch device. */
 export function useLongPress(onTrigger: (x: number, y: number) => void) {
-  const timer = useRef<number>()
+  const timer = useRef<number | undefined>(undefined)
   const origin = useRef({ x: 0, y: 0 })
   const cancel = () => window.clearTimeout(timer.current)
 
