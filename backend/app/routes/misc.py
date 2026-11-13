@@ -62,7 +62,16 @@ async def clear_transfers() -> dict:
 
 @prefs_router.get("")
 async def get_preferences() -> dict:
-    return Preferences(**prefs_store.read()).model_dump(by_alias=True)
+    stored = prefs_store.read()
+    try:
+        prefs = Preferences(**stored)
+    except ValueError:
+        # A recovery link saved before URLs were restricted to http(s) would
+        # otherwise make this endpoint fail forever; drop just that field.
+        stored.pop("recovery_link_url", None)
+        stored.pop("recoveryLinkUrl", None)
+        prefs = Preferences(**stored)
+    return prefs.model_dump(by_alias=True)
 
 
 @prefs_router.put("")
