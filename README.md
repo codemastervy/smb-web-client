@@ -169,8 +169,10 @@ cross-share escape attempts in [`TEST_RESULTS.md`](TEST_RESULTS.md).
 
 Don't, without TLS. Put it behind a reverse proxy with a certificate. The
 session cookie is marked `Secure` automatically when the request arrives over
-HTTPS, so a proxy terminating TLS (with `X-Forwarded-Proto` set) gets the right
-behaviour with no extra configuration.
+HTTPS. For the app to believe a proxy's `X-Forwarded-Proto` and
+`X-Forwarded-For`, set `FORWARDED_ALLOW_IPS` to the proxy's address (see
+`docker-compose.yml`). Forwarded headers from any other peer are ignored, so a
+client cannot forge its address to dodge the failed-login throttle.
 
 ---
 

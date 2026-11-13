@@ -43,6 +43,12 @@ services:
       # breaks some older servers; turn it on if every server supports it.
       SMB_ENCRYPT: "false"
 
+      # Behind a reverse proxy? Set this to the proxy's IP so the app trusts
+      # its X-Forwarded-For / X-Forwarded-Proto headers (needed for the
+      # per-client login throttle and Secure cookies). Left at the default,
+      # forwarded headers from anyone else are ignored.
+      # FORWARDED_ALLOW_IPS: "172.18.0.1"
+
       TZ: "${TZ:-UTC}"
 
     volumes:

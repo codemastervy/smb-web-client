@@ -41,8 +41,13 @@ RUN useradd --uid 10001 --no-create-home --shell /usr/sbin/nologin smbweb \
     && mkdir -p /data \
     && chown -R smbweb:smbweb /app /data
 
+# FORWARDED_ALLOW_IPS: which peers may set X-Forwarded-For/-Proto. Trusting
+# everyone ("*") lets any client forge its source address and so sidestep the
+# failed-login throttle. Set this to your reverse proxy's address if you run
+# one in front of the app.
 ENV FRONTEND_DIR=/app/frontend \
-    DATA_DIR=/data
+    DATA_DIR=/data \
+    FORWARDED_ALLOW_IPS=127.0.0.1
 
 USER smbweb
 
@@ -56,4 +61,4 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
 
 ENTRYPOINT ["/usr/bin/tini", "--"]
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8080", \
-     "--proxy-headers", "--forwarded-allow-ips=*"]
+     "--proxy-headers"]

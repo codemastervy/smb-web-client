@@ -115,6 +115,41 @@ async def refuse_when_misconfigured(request: Request, call_next):
     return await call_next(request)
 
 
+# Everything the SPA loads is same-origin. React sets inline style attributes,
+# hence 'unsafe-inline' for styles only -- never for scripts.
+_SPA_CSP = "; ".join([
+    "default-src 'self'",
+    "script-src 'self'",
+    "style-src 'self' 'unsafe-inline'",
+    "img-src 'self' data: blob:",
+    "media-src 'self' blob:",
+    "frame-src 'self'",
+    "object-src 'none'",
+    "base-uri 'self'",
+    "form-action 'self'",
+    "frame-ancestors 'self'",
+])
+
+
+@app.middleware("http")
+async def security_headers(request: Request, call_next):
+    response = await call_next(request)
+    headers = response.headers
+    headers.setdefault("X-Content-Type-Options", "nosniff")
+    headers.setdefault("X-Frame-Options", "SAMEORIGIN")
+    headers.setdefault("Referrer-Policy", "no-referrer")
+    headers.setdefault("Cross-Origin-Opener-Policy", "same-origin")
+    headers.setdefault("Permissions-Policy",
+                       "camera=(), microphone=(), geolocation=()")
+    # The interactive API docs pull their assets from a CDN; everything else
+    # gets the strict policy unless the route already set a stricter one.
+    if not request.url.path.startswith(("/api/docs", "/api/openapi.json")):
+        headers.setdefault("Content-Security-Policy", _SPA_CSP)
+    if request.url.path.startswith("/api/"):
+        headers.setdefault("Cache-Control", "no-store")
+    return response
+
+
 @app.get("/api/health")
 async def health() -> dict:
     return {

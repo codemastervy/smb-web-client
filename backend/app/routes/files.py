@@ -19,6 +19,21 @@ router = APIRouter(prefix="/api/files", tags=["files"],
                    dependencies=[Depends(require_auth)])
 
 
+# Types a browser can display without running anything. Everything else is
+# forced to download: HTML or SVG served inline from this origin would run
+# script with the signed-in session, and the files come from a server other
+# people can write to.
+_INLINE_PREFIXES = ("image/", "video/", "audio/")
+_INLINE_EXACT = {"application/pdf", "text/plain"}
+_NEVER_INLINE = {"image/svg+xml"}
+
+
+def _inline_safe(media_type: str) -> bool:
+    if media_type in _NEVER_INLINE:
+        return False
+    return media_type in _INLINE_EXACT or media_type.startswith(_INLINE_PREFIXES)
+
+
 def _fail(failure: Failure) -> HTTPException:
     return HTTPException(status_code=failure.http_status,
                          detail=failure.to_dict())
@@ -168,12 +183,23 @@ async def download(serverId: str = Query(...), path: str = Query(...),
             raise
 
     media_type = mimetypes.guess_type(name)[0] or "application/octet-stream"
+    show_inline = inline and _inline_safe(media_type)
     headers = {
         "Content-Disposition":
-            f"{'inline' if inline else 'attachment'}; "
+            f"{'inline' if show_inline else 'attachment'}; "
             f"filename*=UTF-8''{urllib.parse.quote(name)}",
         "Accept-Ranges": "none",
+        "X-Content-Type-Options": "nosniff",
     }
+    if media_type != "application/pdf":
+        # Even if a browser rendered this as a document it gets no script and
+        # a sandboxed origin. PDFs are exempt: the built-in viewer refuses a
+        # sandbox.
+        headers["Content-Security-Policy"] = (
+            "sandbox; default-src 'none'; style-src 'unsafe-inline'; "
+            "img-src 'self' data:; media-src 'self'")
+    if not show_inline and media_type.startswith("text/"):
+        media_type = "application/octet-stream"
     if info.get("size") is not None:
         headers["Content-Length"] = str(info["size"])
 
