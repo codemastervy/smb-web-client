@@ -1,3 +1,4 @@
+import { Icon } from './Icon'
 import { useState } from 'react'
 import { FailureInfo } from '../lib/api'
 import { failureGlyph } from '../lib/format'
@@ -46,7 +47,7 @@ export function FailureScreen({
     <div className="failure-screen" data-testid="failureModal">
       <div className="failure-card">
         <div className="failure-glyph" aria-hidden="true">
-          {failureGlyph(failure.kind)}
+          <Icon name={failureGlyph(failure.kind)} size={46} />
         </div>
         <h2>{failure.title}</h2>
         <p>{failure.message}</p>
@@ -62,14 +63,14 @@ export function FailureScreen({
           {recoveryIsProminent && (
             <button className="btn primary" onClick={openRecovery}
                     data-testid="failureModal.recoveryApp">
-              ↗ Open {recoveryLink!.name || 'Recovery Link'}
+              <Icon name="external" /> Open {recoveryLink!.name || 'Recovery Link'}
             </button>
           )}
 
           {editIsProminent && (
             <button className="btn primary" onClick={onEditConnection}
                     data-testid="failureModal.editConnection">
-              ✏️ Edit Connection
+              <Icon name="pencil" /> Edit Connection
             </button>
           )}
 
@@ -84,26 +85,26 @@ export function FailureScreen({
                     // empty browser with no explanation.
                     try { await onRetry() } finally { setRetrying(false) }
                   }}>
-            {retrying ? <span className="spin" /> : '↻ Retry'}
+            {retrying ? <span className="spin" /> : <><Icon name="retry" /> Retry</>}
           </button>
 
           {!!serverId && !editIsProminent && (
             <button className="btn" onClick={onEditConnection}
                     data-testid="failureModal.editConnection">
-              ✏️ Edit Connection
+              <Icon name="pencil" /> Edit Connection
             </button>
           )}
 
           {!recoveryIsProminent && hasRecovery && (
             <button className="btn" onClick={openRecovery}
                     data-testid="failureModal.recoveryApp">
-              ↗ Open {recoveryLink!.name || 'Recovery Link'}
+              <Icon name="external" /> Open {recoveryLink!.name || 'Recovery Link'}
             </button>
           )}
 
           <button className="btn" onClick={onOpenSettings}
                   data-testid="failureModal.openSettings">
-            ⚙️ Open Settings
+            <Icon name="settings" /> Open Settings
           </button>
 
           <button className="btn ghost" onClick={onDismiss}

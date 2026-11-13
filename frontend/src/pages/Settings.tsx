@@ -1,3 +1,4 @@
+import { Icon } from '../components/Icon'
 import { useEffect, useState } from 'react'
 import { api, Preferences, Server } from '../lib/api'
 import { useToast } from '../components/Toast'
@@ -145,7 +146,7 @@ export function Settings({ servers, prefs, onPrefs, onEditServer, onAddServer,
                 </div>
                 {s.hasSavedPassword && (
                   <span className={`badge ${s.passwordRecoverable ? '' : 'warn'}`}>
-                    {s.passwordRecoverable ? '🔒 saved' : '⚠ unreadable'}
+                    {s.passwordRecoverable ? <><Icon name="lock" size={12} /> saved</> : <><Icon name="warning" size={12} /> unreadable</>}
                   </span>
                 )}
                 <button className="btn sm" onClick={() => onEditServer(s)}>Edit</button>

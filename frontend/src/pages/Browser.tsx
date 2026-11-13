@@ -1,3 +1,4 @@
+import { Icon } from '../components/Icon'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   api, ApiError, Entry, FailureInfo, Listing, Preferences, Server, uploadFile,
@@ -179,14 +180,14 @@ export function Browser({ server, prefs, onFailure, onMenu, onOpenTransfers,
   function menuItems(entry: Entry | null): MenuItem[] {
     if (!entry) {
       return [
-        { label: 'New folder', icon: '📁', onSelect: () => setNewFolder(true) },
-        { label: 'Upload files', icon: '⬆️', onSelect: () => fileInput.current?.click() },
+        { label: 'New folder', icon: 'folder-plus', onSelect: () => setNewFolder(true) },
+        { label: 'Upload files', icon: 'upload', onSelect: () => fileInput.current?.click() },
         {
           label: clipboard ? `Paste ${clipboard.paths.length} item(s)` : 'Paste',
-          icon: '📋', disabled: !clipboard, separatorBefore: true,
+          icon: 'clipboard', disabled: !clipboard, separatorBefore: true,
           onSelect: () => void paste(),
         },
-        { label: 'Refresh', icon: '🔄', onSelect: () => void load() },
+        { label: 'Refresh', icon: 'refresh', onSelect: () => void load() },
       ]
     }
 
@@ -195,25 +196,25 @@ export function Browser({ server, prefs, onFailure, onMenu, onOpenTransfers,
     const items: MenuItem[] = []
 
     if (entry.isDir) {
-      items.push({ label: 'Open', icon: '📂', onSelect: () => open(entry) })
+      items.push({ label: 'Open', icon: 'folder-open', onSelect: () => open(entry) })
     } else {
       items.push({
-        label: 'Download', icon: '⬇️',
+        label: 'Download', icon: 'download',
         onSelect: () => { window.location.href = api.downloadUrl(server.id, entry.path) },
       })
       if (previewKind(entry.name)) {
-        items.push({ label: 'Preview', icon: '👁️', onSelect: () => setPreview(entry) })
+        items.push({ label: 'Preview', icon: 'eye', onSelect: () => setPreview(entry) })
       }
     }
 
     items.push(
-      { label: 'Rename', icon: '✏️', separatorBefore: true, disabled: many,
+      { label: 'Rename', icon: 'pencil', separatorBefore: true, disabled: many,
         onSelect: () => setRenaming(entry) },
-      { label: `Copy${many ? ` (${targets.length})` : ''}`, icon: '📄',
+      { label: `Copy${many ? ` (${targets.length})` : ''}`, icon: 'copy',
         onSelect: () => { setClipboard({ mode: 'copy', paths: targets }); toast('Ready to paste') } },
-      { label: `Cut${many ? ` (${targets.length})` : ''}`, icon: '✂️',
+      { label: `Cut${many ? ` (${targets.length})` : ''}`, icon: 'scissors',
         onSelect: () => { setClipboard({ mode: 'cut', paths: targets }); toast('Ready to move') } },
-      { label: `Delete${many ? ` (${targets.length})` : ''}`, icon: '🗑️',
+      { label: `Delete${many ? ` (${targets.length})` : ''}`, icon: 'trash',
         danger: true, separatorBefore: true,
         onSelect: () => setConfirmDelete(targets) },
     )
@@ -225,7 +226,7 @@ export function Browser({ server, prefs, onFailure, onMenu, onOpenTransfers,
   return (
     <>
       <header className="topbar">
-        <button className="btn ghost icon menu-btn" onClick={onMenu} aria-label="Open menu">☰</button>
+        <button className="btn ghost icon menu-btn" onClick={onMenu} aria-label="Open menu"><Icon name="menu" /></button>
         <div className="crumbs">
           <button className="crumb" onClick={() => setPath('/')}>{server.shareName || server.name}</button>
           {crumbs.map((part, i) => {
@@ -242,9 +243,9 @@ export function Browser({ server, prefs, onFailure, onMenu, onOpenTransfers,
         </div>
         <span className="spacer" />
         <button className={`btn sm ${view === 'list' ? 'primary' : ''}`}
-                onClick={() => setView('list')} aria-label="List view">☰</button>
+                onClick={() => setView('list')} aria-label="List view"><Icon name="list" /></button>
         <button className={`btn sm ${view === 'grid' ? 'primary' : ''}`}
-                onClick={() => setView('grid')} aria-label="Grid view">▦</button>
+                onClick={() => setView('grid')} aria-label="Grid view"><Icon name="grid" /></button>
       </header>
 
       <div className="content"
@@ -260,7 +261,7 @@ export function Browser({ server, prefs, onFailure, onMenu, onOpenTransfers,
                  value={query} onChange={(e) => setQuery(e.target.value)} />
           <button className={`btn sm ${recursive ? 'primary' : ''}`}
                   onClick={() => setRecursive((r) => !r)}
-                  title="Search subfolders">⌘</button>
+                  title="Search subfolders"><Icon name="subfolders" /></button>
           <select className="select" style={{ width: 'auto' }} value={sortField}
                   onChange={(e) => setSortField(e.target.value as typeof sortField)}>
             <option value="name">Name</option>
@@ -272,7 +273,7 @@ export function Browser({ server, prefs, onFailure, onMenu, onOpenTransfers,
             {ascending ? '↑' : '↓'}
           </button>
           <button className="btn sm" onClick={() => setShowHidden((h) => !h)}
-                  title="Toggle hidden files">{showHidden ? '👁️' : '🙈'}</button>
+                  title="Toggle hidden files">{showHidden ? <Icon name="eye" /> : <Icon name="eye-off" />}</button>
           <button className="btn sm" onClick={() => setNewFolder(true)}>New folder</button>
           <button className="btn sm primary" onClick={() => fileInput.current?.click()}>Upload</button>
           <input ref={fileInput} type="file" multiple hidden
@@ -308,7 +309,7 @@ export function Browser({ server, prefs, onFailure, onMenu, onOpenTransfers,
           <div className="empty"><span className="spin" /></div>
         ) : entries.length === 0 ? (
           <div className="empty">
-            <span className="glyph">{searching ? '🔍' : '📂'}</span>
+            <span className="glyph">{searching ? <Icon name="search" size={30} /> : <Icon name="folder-open" size={30} />}</span>
             {searching ? 'Nothing matched that search.' : 'This folder is empty.'}
           </div>
         ) : view === 'list' ? (
@@ -391,7 +392,7 @@ function Row({ entry, selected, onOpen, onSelect, onMenu }: {
     <div className={`file-row ${selected ? 'selected' : ''}`} {...press}
          onClick={(e) => onSelect(e.metaKey || e.ctrlKey || e.shiftKey)}
          onDoubleClick={onOpen}>
-      <span style={{ fontSize: 17 }}>{iconFor(entry)}</span>
+      <Icon name={iconFor(entry)} size={17} />
       <span className="name">
         <button onClick={(e) => { e.stopPropagation(); onOpen() }}>{entry.name}</button>
         {entry.readOnly && <span className="badge">read-only</span>}
@@ -415,7 +416,7 @@ function Tile({ entry, selected, onOpen, onSelect, onMenu }: {
     <div className={`file-tile ${selected ? 'selected' : ''}`} {...press}
          onClick={(e) => onSelect(e.metaKey || e.ctrlKey || e.shiftKey)}
          onDoubleClick={onOpen}>
-      <div className="glyph">{iconFor(entry)}</div>
+      <div className="glyph"><Icon name={iconFor(entry)} size={30} /></div>
       <div className="label">{entry.name}</div>
     </div>
   )

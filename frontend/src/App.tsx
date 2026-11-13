@@ -1,3 +1,4 @@
+import { Icon } from './components/Icon'
 import { useCallback, useEffect, useState } from 'react'
 import {
   api, ApiError, FailureInfo, Preferences, Server, Transfer,
@@ -145,11 +146,11 @@ function Workspace({ onSignOut }: { onSignOut: () => void }) {
     const connected = server.status?.state === 'connected'
     return [
       connected
-        ? { label: 'Disconnect', icon: '⏹', onSelect: () => void disconnect(server) }
-        : { label: 'Connect', icon: '▶️', onSelect: () => void connect(server) },
-      { label: 'Edit Connection', icon: '✏️', separatorBefore: true,
+        ? { label: 'Disconnect', icon: 'stop', onSelect: () => void disconnect(server) }
+        : { label: 'Connect', icon: 'play', onSelect: () => void connect(server) },
+      { label: 'Edit Connection', icon: 'pencil', separatorBefore: true,
         onSelect: () => setEditing(server) },
-      { label: 'Remove', icon: '🗑️', danger: true,
+      { label: 'Remove', icon: 'trash', danger: true,
         onSelect: () => setConfirmRemove(server) },
     ]
   }
@@ -163,7 +164,7 @@ function Workspace({ onSignOut }: { onSignOut: () => void }) {
 
         <aside className={`sidebar glass ${menuOpen ? 'open' : ''}`}>
           <div className="brand">
-            <span className="brand-mark">🗄️</span>
+            <span className="brand-mark"><Icon name="server" size={15} /></span>
             <span>SMB</span>
           </div>
 
@@ -193,7 +194,7 @@ function Workspace({ onSignOut }: { onSignOut: () => void }) {
           <div className="sidebar-foot">
             <button className="btn ghost wide" style={{ justifyContent: 'flex-start' }}
                     onClick={() => { setShowTransfers((v) => !v); refreshTransfers() }}>
-              ⇅ Transfers
+              <Icon name="transfers" /> Transfers
               {transfers.some((t) => t.state === 'active') &&
                 <span className="badge accent" style={{ marginLeft: 'auto' }}>
                   {transfers.filter((t) => t.state === 'active').length}
@@ -201,15 +202,15 @@ function Workspace({ onSignOut }: { onSignOut: () => void }) {
             </button>
             <button className="btn ghost wide" style={{ justifyContent: 'flex-start' }}
                     onClick={() => { setShowSettings(true); setMenuOpen(false) }}>
-              ⚙️ Settings
+              <Icon name="settings" /> Settings
             </button>
             <button className="btn ghost wide" style={{ justifyContent: 'flex-start' }}
                     onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>
-              {theme === 'dark' ? '☀️ Light' : '🌙 Dark'}
+              {theme === 'dark' ? <><Icon name="sun" /> Light</> : <><Icon name="moon" /> Dark</>}
             </button>
             <button className="btn ghost wide" style={{ justifyContent: 'flex-start' }}
                     onClick={async () => { await api.logout().catch(() => {}); onSignOut() }}>
-              🚪 Sign out
+              <Icon name="logout" /> Sign out
             </button>
           </div>
         </aside>
@@ -231,12 +232,12 @@ function Workspace({ onSignOut }: { onSignOut: () => void }) {
             <>
               <header className="topbar">
                 <button className="btn ghost icon menu-btn" onClick={() => setMenuOpen(true)}
-                        aria-label="Open menu">☰</button>
+                        aria-label="Open menu"><Icon name="menu" /></button>
                 <h1>SMB</h1>
               </header>
               <div className="content">
                 <div className="empty">
-                  <span className="glyph">🗄️</span>
+                  <span className="glyph"><Icon name="server" size={30} /></span>
                   {servers.length === 0
                     ? <>No servers yet.<br />
                         <span className="hint">Add a connection to start browsing.</span></>

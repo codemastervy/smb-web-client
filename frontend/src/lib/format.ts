@@ -18,16 +18,16 @@ export function fileDate(epoch: number): string {
 }
 
 export function iconFor(entry: { isDir: boolean; name: string }): string {
-  if (entry.isDir) return '📁'
+  if (entry.isDir) return 'folder'
   const ext = entry.name.split('.').pop()?.toLowerCase() ?? ''
-  if (['jpg', 'jpeg', 'png', 'gif', 'webp', 'heic', 'bmp', 'svg', 'avif'].includes(ext)) return '🖼️'
-  if (['mp4', 'mkv', 'mov', 'avi', 'webm', 'm4v'].includes(ext)) return '🎬'
-  if (['mp3', 'flac', 'wav', 'aac', 'm4a', 'ogg'].includes(ext)) return '🎵'
-  if (ext === 'pdf') return '📕'
-  if (['zip', 'tar', 'gz', 'bz2', 'xz', '7z', 'rar'].includes(ext)) return '🗜️'
-  if (['txt', 'md', 'log', 'json', 'yml', 'yaml', 'conf', 'ini', 'csv'].includes(ext)) return '📄'
-  if (['iso', 'img', 'dmg'].includes(ext)) return '💿'
-  return '📦'
+  if (['jpg', 'jpeg', 'png', 'gif', 'webp', 'heic', 'bmp', 'svg', 'avif'].includes(ext)) return 'image'
+  if (['mp4', 'mkv', 'mov', 'avi', 'webm', 'm4v'].includes(ext)) return 'video'
+  if (['mp3', 'flac', 'wav', 'aac', 'm4a', 'ogg'].includes(ext)) return 'music'
+  if (ext === 'pdf') return 'file-text'
+  if (['zip', 'tar', 'gz', 'bz2', 'xz', '7z', 'rar'].includes(ext)) return 'archive'
+  if (['txt', 'md', 'log', 'json', 'yml', 'yaml', 'conf', 'ini', 'csv'].includes(ext)) return 'file-text'
+  if (['iso', 'img', 'dmg'].includes(ext)) return 'disc'
+  return 'package'
 }
 
 export function previewKind(name: string): 'image' | 'video' | 'audio' | 'pdf' | 'text' | null {
@@ -44,14 +44,14 @@ export function previewKind(name: string): 'image' | 'video' | 'audio' | 'pdf' |
 export function failureGlyph(kind: string): string {
   switch (kind) {
     case 'timed_out':
-    case 'host_unreachable': return '📡'
-    case 'connection_refused': return '⛔'
-    case 'authentication_failed': return '🔑'
+    case 'host_unreachable': return 'unreachable'
+    case 'connection_refused': return 'blocked'
+    case 'authentication_failed': return 'key'
     case 'share_not_found':
-    case 'not_found': return '🔍'
-    case 'permission_denied': return '🔒'
-    case 'out_of_space': return '💾'
-    case 'invalid_configuration': return '⚙️'
-    default: return '⚠️'
+    case 'not_found': return 'search'
+    case 'permission_denied': return 'lock'
+    case 'out_of_space': return 'server'
+    case 'invalid_configuration': return 'settings'
+    default: return 'warning'
   }
 }

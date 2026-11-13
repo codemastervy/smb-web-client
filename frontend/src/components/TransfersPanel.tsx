@@ -1,8 +1,9 @@
+import { Icon } from './Icon'
 import { Transfer } from '../lib/api'
 import { bytes } from '../lib/format'
 
 const GLYPH: Record<string, string> = {
-  upload: '⬆️', download: '⬇️', copy: '📄', move: '➡️', delete: '🗑️',
+  upload: 'upload', download: 'download', copy: 'copy', move: 'move', delete: 'trash',
 }
 
 export function TransfersPanel({ transfers, onClose, onClear }: {
@@ -28,7 +29,7 @@ export function TransfersPanel({ transfers, onClose, onClear }: {
         return (
           <div className="transfer-row" key={t.id}>
             <div className="row">
-              <span>{GLYPH[t.direction] ?? '📦'}</span>
+              <Icon name={GLYPH[t.direction] ?? 'package'} />
               <span className="truncate" style={{ flex: 1, fontSize: 13 }}>{t.fileName}</span>
               <span className="hint">
                 {t.state === 'active'
