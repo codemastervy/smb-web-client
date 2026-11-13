@@ -1,3 +1,4 @@
+import { Icon } from './Icon'
 import React, { Fragment, ReactNode, useEffect, useLayoutEffect, useRef, useState } from 'react'
 
 export interface MenuItem {
@@ -58,7 +59,7 @@ export function ContextMenu({ x, y, items, onClose }: {
           {item.separatorBefore && i > 0 && <hr />}
           <button className={item.danger ? 'danger' : ''} disabled={item.disabled}
                   onClick={() => { item.onSelect(); onClose() }}>
-            <span style={{ width: 17 }}>{item.icon}</span>{item.label}
+            <span className="menu-icon">{item.icon && <Icon name={item.icon} size={15} />}</span>{item.label}
           </button>
         </Fragment>
       ))}

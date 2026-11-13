@@ -118,6 +118,13 @@ body::before {
 
 button, input, select, textarea { font: inherit; color: inherit; }
 
+/* Inline SVG icons (components/Icon.tsx) inherit the text colour. */
+.icon { flex: none; display: inline-block; vertical-align: -0.18em; }
+.icon[data-icon='folder'] { color: var(--accent); }
+.context-menu .menu-icon { width: 17px; display: inline-grid; place-items: center; color: var(--text-muted); }
+.context-menu button.danger .menu-icon { color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
 /* ---------------------------------------------------------------- glass */
 
 .glass {
@@ -166,9 +173,9 @@ button, input, select, textarea { font: inherit; color: inherit; }
 }
 .brand-mark {
   width: 30px; height: 30px; border-radius: 9px;
-  background: linear-gradient(140deg, var(--accent), #a06bff);
-  display: grid; place-items: center; font-size: 15px;
-  box-shadow: 0 2px 10px rgba(80,130,255,.42), inset 0 1px 0 rgba(255,255,255,.4);
+  background: var(--glass-strong); color: var(--text);
+  border: 1px solid var(--edge); border-top-color: var(--edge-top);
+  display: grid; place-items: center;
 }
 
 .sidebar-scroll { flex: 1; overflow-y: auto; margin: 0 -4px; padding: 0 4px; }
@@ -348,7 +355,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
   background: var(--glass-active);
   border-color: color-mix(in srgb, var(--accent) 50%, transparent);
 }
-.file-tile .glyph { font-size: 30px; }
+.file-tile .glyph { display: grid; place-items: center; height: 34px; color: var(--text-muted); }
 .file-tile .label {
   margin-top: 8px; font-size: 12.5px; word-break: break-word;
   display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
@@ -407,7 +414,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
   border: 1px solid var(--edge); border-top-color: var(--edge-top);
   box-shadow: 0 30px 80px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.15);
 }
-.failure-glyph { font-size: 50px; line-height: 1; margin-bottom: 14px; }
+.failure-glyph { display: grid; place-items: center; margin-bottom: 14px; color: var(--text-muted); }
 .failure-card h2 { margin: 0 0 10px; font-size: 21px; font-weight: 640; }
 .failure-card p { margin: 0; color: var(--text-muted); font-size: 14px; }
 .failure-actions { display: flex; flex-direction: column; gap: 9px; margin-top: 22px; }
@@ -454,7 +461,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 }
 .progress > span {
   display: block; height: 100%; border-radius: 99px;
-  background: linear-gradient(90deg, var(--accent), #a06bff);
+  background: var(--accent);
   transition: width .2s;
 }
 .progress.indeterminate > span {
@@ -466,7 +473,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 /* ---------------------------------------------------------------- misc */
 
 .empty { text-align: center; padding: 52px 20px; color: var(--text-muted); }
-.empty .glyph { font-size: 40px; display: block; margin-bottom: 12px; opacity: .75; }
+.empty .glyph { display: grid; place-items: center; margin-bottom: 12px; color: var(--text-faint); }
 
 .notice {
   padding: 11px 14px; border-radius: var(--radius-sm); font-size: 13px;

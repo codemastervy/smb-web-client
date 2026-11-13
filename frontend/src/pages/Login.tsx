@@ -1,3 +1,4 @@
+import { Icon } from '../components/Icon'
 import { FormEvent, useEffect, useState } from 'react'
 import { api, ApiError } from '../lib/api'
 
@@ -26,7 +27,7 @@ export function Login({ onSuccess }: { onSuccess: () => void }) {
     <div style={{ display: 'grid', placeItems: 'center', minHeight: '100vh', padding: 20 }}>
       <form className="modal" onSubmit={submit} style={{ width: 'min(390px, 100%)' }}>
         <div className="brand" style={{ padding: '0 0 14px' }}>
-          <span className="brand-mark">🗄️</span>
+          <span className="brand-mark"><Icon name="server" size={15} /></span>
           <span>SMB</span>
         </div>
 
